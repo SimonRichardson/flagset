@@ -11,7 +11,8 @@ import (
 // A FlagSet represents a set of defined flags. The zero value of a FlagSet
 // has no name and has ContinueOnError error handling.
 type FlagSet struct {
-	flag *flag.FlagSet
+	flag  *flag.FlagSet
+	Usage func()
 }
 
 // NewFlagSet returns a new, empty flag set with the specified name and error
@@ -186,6 +187,10 @@ func (f *FlagSet) Var(value flag.Value, name string, usage string) {
 // are defined and before flags are accessed by the program.
 // The return value will be ErrHelp if -help or -h were set but not defined.
 func (f *FlagSet) Parse(arguments []string) error {
+	if f.Usage != nil {
+		f.flag.Usage = f.Usage
+	}
+
 	if err := f.flag.Parse(arguments); err != nil {
 		return err
 	}
