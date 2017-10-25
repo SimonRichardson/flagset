@@ -48,26 +48,6 @@ func TestEnvName(t *testing.T) {
 	}
 }
 
-func TestBuildFlag(t *testing.T) {
-	for _, testcase := range []struct {
-		title       string
-		name, value string
-		want        string
-	}{
-		{"normal", "a", "value", "-a=value"},
-		{"no value", "a", "", "-a"},
-		{"number value", "a", "'1'", "-a='1'"},
-		{"bool value", "a", "true", "-a=true"},
-		{"quoted value", "a", "\"value\"", "-a=\"value\""},
-	} {
-		t.Run(testcase.title, func(t *testing.T) {
-			if expected, actual := testcase.want, buildFlag(testcase.name, testcase.value); expected != actual {
-				t.Errorf("expected: %s, actual: %s", expected, actual)
-			}
-		})
-	}
-}
-
 // ASCII creates a series of tags that are ascii compliant.
 type ASCII []byte
 

@@ -2,7 +2,6 @@ package flagset
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"strings"
 	"syscall"
@@ -191,7 +190,6 @@ func (f *FlagSet) Parse(arguments []string) error {
 		return err
 	}
 
-	// Read all the potential env vars first.
 	f.VisitAll(func(flag *flag.Flag) {
 		name := envName(flag.Name)
 		if value, ok := syscall.Getenv(name); ok {
@@ -204,11 +202,4 @@ func (f *FlagSet) Parse(arguments []string) error {
 
 func envName(name string) string {
 	return strings.Replace(strings.ToUpper(name), ".", "_", -1)
-}
-
-func buildFlag(name, value string) string {
-	if len(value) == 0 {
-		return fmt.Sprintf("-%s", name)
-	}
-	return fmt.Sprintf("-%s=%s", name, value)
 }
