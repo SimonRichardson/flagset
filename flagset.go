@@ -198,7 +198,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		return err
 	}
 
-	var fileArgs map[string]string
+	fileArgs := make(map[string]string)
 	if fileName, ok := syscall.Getenv("ENV_FILE"); ok && fileName != "" {
 		if file, err := ioutil.ReadFile(fileName); err == nil {
 			scanner := bufio.NewScanner(bytes.NewReader(file))
