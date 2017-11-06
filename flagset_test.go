@@ -3,6 +3,7 @@ package flagset
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"reflect"
@@ -22,6 +23,43 @@ func TestReadingFromEnv(t *testing.T) {
 		if err := flagset.Parse(args); err != nil {
 			t.Fatal(err)
 		}
+
+		os.Unsetenv("TEST")
+
+		return *test == envValue.String()
+	}
+	if err := quick.Check(fn, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestReadingFromEnvFile(t *testing.T) {
+	fn := func(envValue, defaultValue, cmdValue ASCII) bool {
+		tmpfile, err := ioutil.TempFile("", "envfile")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.Remove(tmpfile.Name())
+
+		content := []byte(fmt.Sprintf("TEST=%s", envValue.String()))
+		if _, err := tmpfile.Write(content); err != nil {
+			t.Fatal(err)
+		}
+		if err := tmpfile.Close(); err != nil {
+			t.Fatal(err)
+		}
+
+		os.Setenv("ENV_FILE", tmpfile.Name())
+
+		flagset := NewFlagSet("test", flag.ExitOnError)
+		test := flagset.String("test", defaultValue.String(), "test value")
+
+		args := []string{fmt.Sprintf("-test=%s", cmdValue.String())}
+		if err := flagset.Parse(args); err != nil {
+			t.Fatal(err)
+		}
+
+		os.Unsetenv("ENV_FILE")
 
 		return *test == envValue.String()
 	}

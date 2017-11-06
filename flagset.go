@@ -1,8 +1,11 @@
 package flagset
 
 import (
+	"bufio"
+	"bytes"
 	"flag"
 	"io"
+	"io/ioutil"
 	"strings"
 	"syscall"
 	"time"
@@ -195,8 +198,24 @@ func (f *FlagSet) Parse(arguments []string) error {
 		return err
 	}
 
+	fileArgs := make(map[string]string)
+	if fileName, ok := syscall.Getenv("ENV_FILE"); ok && fileName != "" {
+		if file, err := ioutil.ReadFile(fileName); err == nil {
+			scanner := bufio.NewScanner(bytes.NewReader(file))
+			for scanner.Scan() {
+				parts := strings.Split(scanner.Text(), "=")
+				if len(parts) > 1 && parts[0] != "" {
+					fileArgs[parts[0]] = strings.Join(parts[1:], "=")
+				}
+			}
+		}
+	}
+
 	f.VisitAll(func(flag *flag.Flag) {
 		name := envName(flag.Name)
+		if value, ok := fileArgs[name]; ok {
+			f.flag.Set(flag.Name, value)
+		}
 		if value, ok := syscall.Getenv(name); ok {
 			f.flag.Set(flag.Name, value)
 		}
